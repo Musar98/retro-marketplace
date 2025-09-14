@@ -41,19 +41,27 @@ export default function Header() {
             </Link>
           </li>
           <li>
-            <Link href="/forum" style={{ color: "#cfcfcf", textDecoration: "none" }}>
+            <Link
+              href="/forum"
+              style={{ color: "#cfcfcf", textDecoration: "none" }}
+            >
               Forum
             </Link>
           </li>
           <li>
-            <Link href="/marketplace" style={{ color: "#cfcfcf", textDecoration: "none" }}>
+            <Link
+              href="/marketplace"
+              style={{ color: "#cfcfcf", textDecoration: "none" }}
+            >
               Marketplace
             </Link>
           </li>
 
           {user ? (
             <>
-              <li style={{ color: "#00ff00", alignSelf: "center" }}>{user.email}</li>
+              <li style={{ color: "#00ff00", alignSelf: "center" }}>
+                {user.email}
+              </li>
               <li>
                 <button
                   onClick={handleLogout}
