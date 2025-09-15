@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/SupabaseClient";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Post = {
   id: string;
@@ -21,6 +22,7 @@ type Review = {
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     void fetchPosts();
@@ -32,7 +34,7 @@ export default function Home() {
       .from("listings")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(3); // just preview
+      .limit(3);
 
     if (!error && data) setPosts(data as Post[]);
   };
@@ -42,24 +44,48 @@ export default function Home() {
       .from("reviews")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(3); // just preview
+      .limit(3);
 
     if (!error && data) setReviews(data as Review[]);
   };
 
+  const buttonStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "1rem",
+    right: "1rem",
+    padding: "0.5rem 1rem",
+    color: "#00ff00",
+    border: "2px solid #00ff00",
+    borderRadius: "8px",
+    cursor: "pointer",
+    boxShadow: "0 0 12px #00ff00",
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    margin: "0 auto 5rem auto",
+    maxWidth: "60%",
+    border: "2px dotted #00ff00",
+    padding: "2rem",
+    borderRadius: "8px",
+    position: "relative",
+  };
+
   return (
     <div style={{ marginTop: "2rem" }}>
-      {/* Forum section */}
-      <section
-        style={{
-          margin: "0 auto 5rem auto",
-          maxWidth: "60%",
-          border: "2px dotted #00ff00",
-          padding: "2rem",
-          borderRadius: "8px",
-        }}
-      >
-        <h1 style={{ color: "#00ff00" }}>💬 Forum</h1>
+      <section style={sectionStyle}>
+        <h1 style={{ color: "#00ff00" }}>💬 Review Forum</h1>
+        <button
+          style={buttonStyle}
+          onClick={() => router.push("/create-post?type=review")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.boxShadow = "0 0 20px #00ff00")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.boxShadow = "0 0 12px #00ff00")
+          }
+        >
+          📝 Create review
+        </button>
         <p style={{ color: "#cfcfcf" }}>Trending Posts</p>
         <div>
           {reviews.length > 0 ? (
@@ -78,16 +104,20 @@ export default function Home() {
         </Link>
       </section>
 
-      <section
-        style={{
-          margin: "0 auto 5rem auto",
-          maxWidth: "60%",
-          border: "2px dotted #00ff00",
-          padding: "2rem",
-          borderRadius: "8px",
-        }}
-      >
+      <section style={sectionStyle}>
         <h2 style={{ color: "#00ff00" }}>🛒 Marktplatz</h2>
+        <button
+          style={buttonStyle}
+          onClick={() => router.push("/create-post?type=marketplace")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.boxShadow = "0 0 20px #00ff00")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.boxShadow = "0 0 12px #00ff00")
+          }
+        >
+          💰 Buy / Sell / Seek
+        </button>
         <p style={{ color: "#cfcfcf" }}>Trending listings</p>
         {posts.length > 0 ? (
           posts.map((post) => <PostCard key={post.id} post={post} />)

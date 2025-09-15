@@ -12,6 +12,7 @@ import {
   titleStyle,
   uploadLabelStyle,
 } from "@/app/profile/Styles";
+import Loading from "@/components/Loading";
 
 type Profile = {
   id: string;
@@ -170,7 +171,10 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <p style={{ color: "#cfcfcf" }}>Loading profile...</p>;
+  if (loading) {
+    return <Loading loadingText={"Loading profile..."} />;
+  }
+
   if (!profile) return <p style={{ color: "red" }}>No profile found.</p>;
 
   const avatarToShow = avatarFile

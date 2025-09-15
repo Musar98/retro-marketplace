@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { supabaseClient } from "@/lib/SupabaseClient";
 import { useSupabaseUser } from "@/lib/useSupabaseuser";
+import ProfileButton from "@/components/ProfileButton";
 
 export default function Header() {
   const user = useSupabaseUser();
@@ -59,9 +60,7 @@ export default function Header() {
 
           {user ? (
             <>
-              <li style={{ color: "#00ff00", alignSelf: "center" }}>
-                {user.email}
-              </li>
+              <ProfileButton />
               <li>
                 <button
                   onClick={handleLogout}
