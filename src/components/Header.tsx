@@ -23,9 +23,17 @@ export default function Header() {
         borderBottom: "2px solid #00ff00",
       }}
     >
-      <h1 style={{ color: "#00ff00", fontFamily: "var(--font-geist-mono)" }}>
-        Retro Marketplace
-      </h1>
+      <Link href="/">
+        <h1
+          style={{
+            color: "#00ff00",
+            fontFamily: "var(--font-geist-mono)",
+            cursor: "pointer",
+          }}
+        >
+          Retro Marketplace
+        </h1>
+      </Link>
       <nav>
         <ul
           style={{
