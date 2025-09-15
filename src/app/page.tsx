@@ -105,7 +105,7 @@ export default function Home() {
       </section>
 
       <section style={sectionStyle}>
-        <h2 style={{ color: "#00ff00" }}>🛒 Marktplatz</h2>
+        <h2 style={{ color: "#00ff00" }}>🛒 Marketplace</h2>
         <button
           style={buttonStyle}
           onClick={() => router.push("/create-post?type=marketplace")}
