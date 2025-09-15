@@ -146,27 +146,36 @@ export default function CreatePostPage() {
           onChange={(e) =>
             e.target.files?.[0] && handleFileChange(e.target.files[0])
           }
-          style={{ marginBottom: 12 }}
+          style={{
+            marginBottom: 12,
+            background: "#0b0b0b",
+            color: "#cfcfcf",
+            padding: 12,
+            border: "2px dashed #00ff00",
+            borderRadius: 8,
+          }}
         />
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{
-          padding: "0.5rem 1rem",
-          background: "#0b0b0b",
-          color: "#00ff00",
-          border: "2px solid #00ff00",
-          borderRadius: 6,
-          cursor: "pointer",
-          fontFamily: "var(--font-geist-mono)",
-          boxShadow: loading ? "0 0 12px #00ff00" : "none",
-          transition: "box-shadow 0.2s ease",
-        }}
-      >
-        {loading ? "Posting..." : "Post"}
-      </button>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#0b0b0b",
+            color: "#00ff00",
+            border: "2px solid #00ff00",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontFamily: "var(--font-geist-mono)",
+            boxShadow: loading ? "0 0 12px #00ff00" : "none",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
+          }}
+        >
+          {loading ? "Posting..." : "Post"}
+        </button>
+      </div>
 
       {error && <p style={{ color: "#ff4d4d", marginTop: 8 }}>{error}</p>}
       {message && <p style={{ color: "#00ff00", marginTop: 8 }}>{message}</p>}

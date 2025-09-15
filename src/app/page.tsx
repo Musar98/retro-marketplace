@@ -84,7 +84,7 @@ export default function Home() {
             (e.currentTarget.style.boxShadow = "0 0 12px #00ff00")
           }
         >
-          📝 Create review
+          📝 Write review
         </button>
         <p style={{ color: "#cfcfcf" }}>Trending Posts</p>
         <div>
