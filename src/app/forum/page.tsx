@@ -2,13 +2,8 @@
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/SupabaseClient";
 import Breadcrumbs from "@/components/Breadcrumbs";
-
-type Review = {
-  id: string;
-  content: string;
-  rating?: number;
-  created_at: string;
-};
+import { Review } from "@/app/Types";
+import ReviewPostCard from "@/components/ReviewPostCard";
 
 export default function ForumPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -29,25 +24,15 @@ export default function ForumPage() {
   return (
     <div style={{ margin: "2rem auto", maxWidth: "60%" }}>
       <Breadcrumbs />
-      <h1 style={{ color: "#00ff00", marginBottom: "1rem", fontSize:"2rem"}}>💬 Forum</h1>
+      <h1 style={{ color: "#00ff00", marginBottom: "1rem", fontSize: "2rem" }}>
+        💬 Forum
+      </h1>
       <p style={{ color: "#cfcfcf", marginBottom: "2rem" }}>
         Reviews & product discussions
       </p>
       {reviews.length > 0 ? (
         reviews.map((review) => (
-          <div
-            key={review.id}
-            style={{
-              borderBottom: "1px dashed #00ff00",
-              padding: "1rem 0",
-            }}
-          >
-            <p>{review.content}</p>
-            {review.rating && <p>Rating: {review.rating}/5</p>}
-            <small style={{ color: "#888" }}>
-              {new Date(review.created_at).toLocaleString()}
-            </small>
-          </div>
+          <ReviewPostCard review={review} key={review.id} />
         ))
       ) : (
         <p>No forum posts yet.</p>

@@ -1,28 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/SupabaseClient";
-import PostCard from "@/components/PostCard";
+import MarketplaceListingCard from "@/components/MarketplaceListingCard";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-  images?: string[];
-  type: "BUY" | "SELL" | "LOOKING";
-};
-
-type Review = {
-  id: string;
-  content: string;
-  rating?: number;
-};
+import CreatePostButton from "@/components/CreatePostButton";
+import { MarketplaceListing, Review } from "@/app/Types";
+import ReviewPostCard from "@/components/ReviewPostCard";
 
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [marketplaceListings, setMarketplaceListings] = useState<
+    MarketplaceListing[]
+  >([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     void fetchPosts();
@@ -36,7 +25,7 @@ export default function Home() {
       .order("created_at", { ascending: false })
       .limit(3);
 
-    if (!error && data) setPosts(data as Post[]);
+    if (!error && data) setMarketplaceListings(data as MarketplaceListing[]);
   };
 
   const fetchReviews = async () => {
@@ -49,84 +38,62 @@ export default function Home() {
     if (!error && data) setReviews(data as Review[]);
   };
 
-  const buttonStyle: React.CSSProperties = {
-    position: "absolute",
-    top: "1rem",
-    right: "1rem",
-    padding: "0.5rem 1rem",
-    color: "#00ff00",
-    border: "2px solid #00ff00",
-    borderRadius: "8px",
-    cursor: "pointer",
-    boxShadow: "0 0 12px #00ff00",
-  };
-
-  const sectionStyle: React.CSSProperties = {
+  const sectionStyle: CSSProperties = {
     margin: "0 auto 5rem auto",
     maxWidth: "60%",
     border: "2px dotted #00ff00",
     padding: "2rem",
     borderRadius: "8px",
-    position: "relative",
   };
 
   return (
     <div style={{ marginTop: "2rem" }}>
       <section style={sectionStyle}>
         <h1 style={{ color: "#00ff00" }}>💬 Review Forum</h1>
-        <button
-          style={buttonStyle}
-          onClick={() => router.push("/create-post?type=review")}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.boxShadow = "0 0 20px #00ff00")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.boxShadow = "0 0 12px #00ff00")
-          }
-        >
-          📝 Write review
-        </button>
+        <CreatePostButton
+          buttonText={"📝 Write review"}
+          route={"/create-marketplaceListing?type=review"}
+        />
         <p style={{ color: "#cfcfcf" }}>Trending Posts</p>
         <div>
           {reviews.length > 0 ? (
             reviews.map((review) => (
-              <div key={review.id} style={{ marginBottom: "1rem" }}>
-                <p>{review.content}</p>
-                {review.rating && <p>Rating: {review.rating}/5</p>}
-              </div>
+              <ReviewPostCard review={review} key={review.id} />
             ))
           ) : (
             <p>No forum posts yet.</p>
           )}
         </div>
-        <Link href="/forum" style={{ color: "#00ff00" }}>
-          → Go to Forum
-        </Link>
+        <div style={{ marginTop: "1rem" }}>
+          <Link href="/forum" style={{ color: "#00ff00", marginTop: "1rem" }}>
+            → Go to Forum
+          </Link>
+        </div>
       </section>
 
       <section style={sectionStyle}>
         <h2 style={{ color: "#00ff00" }}>🛒 Marketplace</h2>
-        <button
-          style={buttonStyle}
-          onClick={() => router.push("/create-post?type=marketplace")}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.boxShadow = "0 0 20px #00ff00")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.boxShadow = "0 0 12px #00ff00")
-          }
-        >
-          💰 Buy / Sell / Seek
-        </button>
+
+        <CreatePostButton
+          buttonText={"💰 Buy / Sell / Seek"}
+          route={"/create-marketplaceListing?type=marketplace"}
+        />
         <p style={{ color: "#cfcfcf" }}>Trending listings</p>
-        {posts.length > 0 ? (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
+        {marketplaceListings.length > 0 ? (
+          marketplaceListings.map((marketplaceListing) => (
+            <MarketplaceListingCard
+              marketplaceListing={marketplaceListing}
+              key={marketplaceListing.id}
+            />
+          ))
         ) : (
           <p>No posts yet. Be the first to post!</p>
         )}
-        <Link href="/marketplace" style={{ color: "#00ff00" }}>
-          → Visit marketplace
-        </Link>
+        <div style={{ marginTop: "1rem" }}>
+          <Link href="/marketplace" style={{ color: "#00ff00" }}>
+            → Visit marketplace
+          </Link>
+        </div>
       </section>
     </div>
   );

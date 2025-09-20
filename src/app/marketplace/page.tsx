@@ -1,20 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/SupabaseClient";
-import PostCard from "@/components/PostCard";
+import MarketplaceListingCard from "@/components/MarketplaceListingCard";
 import Breadcrumbs from "@/components/Breadcrumbs";
-
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-  images?: string[];
-  type: "BUY" | "SELL" | "LOOKING";
-  created_at: string;
-};
+import { MarketplaceListing } from "@/app/Types";
 
 export default function MarketplacePage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [marketplaceListings, setMarketplaceListings] = useState<
+    MarketplaceListing[]
+  >([]);
 
   useEffect(() => {
     void fetchPosts();
@@ -26,7 +20,7 @@ export default function MarketplacePage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error && data) setPosts(data as Post[]);
+    if (!error && data) setMarketplaceListings(data as MarketplaceListing[]);
   };
 
   return (
@@ -36,8 +30,10 @@ export default function MarketplacePage() {
       <p style={{ color: "#cfcfcf", marginBottom: "2rem" }}>
         Buy, sell & trade posts
       </p>
-      {posts.length > 0 ? (
-        posts.map((post) => <PostCard key={post.id} post={post} />)
+      {marketplaceListings.length > 0 ? (
+        marketplaceListings.map((marketplaceListing) => (
+          <MarketplaceListingCard key={marketplaceListing.id} marketplaceListing={marketplaceListing} />
+        ))
       ) : (
         <p>No marketplace posts yet. Be the first to post!</p>
       )}

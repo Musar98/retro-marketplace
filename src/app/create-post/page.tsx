@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient } from "@/lib/SupabaseClient";
+import { MarketplaceListingType } from "@/app/Types";
 
 type PostType = "review" | "marketplace";
 
@@ -10,7 +11,8 @@ export default function CreatePostPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [postType, setPostType] = useState<PostType | null>(null);
-
+  const [marketplaceListingType, setMarketplaceListingType] =
+    useState<MarketplaceListingType>("BUY");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,12 +50,12 @@ export default function CreatePostPage() {
         const ext = imageFile.name.split(".").pop();
         const filePath = `${user.id}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabaseClient.storage
-          .from("post-images")
+          .from("marketplaceListing-images")
           .upload(filePath, imageFile, { upsert: true });
         if (uploadErr) throw uploadErr;
 
         const { data } = supabaseClient.storage
-          .from("post-images")
+          .from("marketplaceListing-images")
           .getPublicUrl(filePath);
         imageUrl = data.publicUrl;
       }
@@ -70,6 +72,7 @@ export default function CreatePostPage() {
             {
               title,
               content,
+              type: marketplaceListingType,
               user_id: user.id,
               images: imageUrl ? [imageUrl] : [],
             },
@@ -82,7 +85,7 @@ export default function CreatePostPage() {
       setContent("");
       setImageFile(null);
     } catch (err: any) {
-      setError(err.message || "Failed to create post");
+      setError(err.message || "Failed to create marketplaceListing");
     } finally {
       setLoading(false);
     }
@@ -106,6 +109,28 @@ export default function CreatePostPage() {
           ? "💬 Write a Review"
           : "🛒 Create Marketplace Post"}
       </h1>
+
+      {postType === "marketplace" && (
+        <select
+          value={marketplaceListingType}
+          onChange={(e) =>
+            setMarketplaceListingType(e.target.value as MarketplaceListingType)
+          }
+          style={{
+            width: "100%",
+            marginBottom: 12,
+            padding: "0.5rem",
+            border: "1px solid #00ff00",
+            borderRadius: 4,
+            background: "#0b0b0b",
+            color: "#cfcfcf",
+          }}
+        >
+          <option value="BUY">🛍️ Buying</option>
+          <option value="SELL">💰 Selling</option>
+          <option value="LOOKING">🔍 Looking for</option>
+        </select>
+      )}
 
       <input
         type="text"
