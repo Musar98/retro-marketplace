@@ -52,7 +52,7 @@ export default function Home() {
         <h1 style={{ color: "#00ff00" }}>💬 Review Forum</h1>
         <CreatePostButton
           buttonText={"📝 Write review"}
-          route={"/create-marketplaceListing?type=review"}
+          route={"/create-post?type=review"}
         />
         <p style={{ color: "#cfcfcf" }}>Trending Posts</p>
         <div>
@@ -76,7 +76,7 @@ export default function Home() {
 
         <CreatePostButton
           buttonText={"💰 Buy / Sell / Seek"}
-          route={"/create-marketplaceListing?type=marketplace"}
+          route={"/create-post?type=marketplace"}
         />
         <p style={{ color: "#cfcfcf" }}>Trending listings</p>
         {marketplaceListings.length > 0 ? (

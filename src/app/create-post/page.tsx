@@ -7,15 +7,17 @@ import { MarketplaceListingType } from "@/app/Types";
 
 type PostType = "review" | "marketplace";
 
+const MAX_IMAGES = 3; // 👈 easy to change later
+
 export default function CreatePostPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [postType, setPostType] = useState<PostType | null>(null);
   const [marketplaceListingType, setMarketplaceListingType] =
-    useState<MarketplaceListingType>("BUY");
+    useState<MarketplaceListingType>("SELL");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -31,7 +33,17 @@ export default function CreatePostPage() {
 
   if (!postType) return null;
 
-  const handleFileChange = (file: File) => setImageFile(file);
+  const handleFileChange = (files: FileList | null) => {
+    if (!files) return;
+    const selected = Array.from(files);
+
+    if (imageFiles.length + selected.length > MAX_IMAGES) {
+      setError(`You can upload a maximum of ${MAX_IMAGES} images`);
+      return;
+    }
+
+    setImageFiles((prev) => [...prev, ...selected]);
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -44,29 +56,10 @@ export default function CreatePostPage() {
       } = await supabaseClient.auth.getUser();
       if (!user) throw new Error("Not logged in");
 
-      let imageUrl: string | null = null;
+      const imageUrls: string[] = [];
 
-      if (imageFile && postType === "marketplace") {
-        const ext = imageFile.name.split(".").pop();
-        const filePath = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadErr } = await supabaseClient.storage
-          .from("marketplaceListing-images")
-          .upload(filePath, imageFile, { upsert: true });
-        if (uploadErr) throw uploadErr;
-
-        const { data } = supabaseClient.storage
-          .from("marketplaceListing-images")
-          .getPublicUrl(filePath);
-        imageUrl = data.publicUrl;
-      }
-
-      if (postType === "review") {
-        const { error: reviewErr } = await supabaseClient
-          .from("reviews")
-          .insert([{ title, content, user_id: user.id }]);
-        if (reviewErr) throw reviewErr;
-      } else {
-        const { error: postErr } = await supabaseClient
+      if (postType === "marketplace") {
+        const { data: listing, error: postErr } = await supabaseClient
           .from("listings")
           .insert([
             {
@@ -74,18 +67,54 @@ export default function CreatePostPage() {
               content,
               type: marketplaceListingType,
               user_id: user.id,
-              images: imageUrl ? [imageUrl] : [],
+              images: [],
             },
-          ]);
+          ])
+          .select()
+          .single();
+
         if (postErr) throw postErr;
+
+        if (imageFiles.length > 0) {
+          for (const file of imageFiles) {
+            const ext = file.name.split(".").pop();
+            const filePath = `${user.id}/${listing.id}/${Date.now()}-${Math.random()
+              .toString(36)
+              .substring(2)}.${ext}`;
+
+            const { error: uploadErr } = await supabaseClient.storage
+              .from("marketplaceListing-images")
+              .upload(filePath, file);
+
+            if (uploadErr) throw uploadErr;
+
+            const {
+              data: { publicUrl },
+            } = supabaseClient.storage
+              .from("marketplaceListing-images")
+              .getPublicUrl(filePath);
+
+            imageUrls.push(publicUrl);
+          }
+
+          await supabaseClient
+            .from("listings")
+            .update({ images: imageUrls })
+            .eq("id", listing.id);
+        }
+      } else {
+        const { error: reviewErr } = await supabaseClient
+          .from("reviews")
+          .insert([{ title, content, user_id: user.id }]);
+        if (reviewErr) throw reviewErr;
       }
 
       setMessage("Post created successfully!");
       setTitle("");
       setContent("");
-      setImageFile(null);
+      setImageFiles([]);
     } catch (err: any) {
-      setError(err.message || "Failed to create marketplaceListing");
+      setError(err.message || "Failed to create post");
     } finally {
       setLoading(false);
     }
@@ -111,25 +140,103 @@ export default function CreatePostPage() {
       </h1>
 
       {postType === "marketplace" && (
-        <select
-          value={marketplaceListingType}
-          onChange={(e) =>
-            setMarketplaceListingType(e.target.value as MarketplaceListingType)
-          }
-          style={{
-            width: "100%",
-            marginBottom: 12,
-            padding: "0.5rem",
-            border: "1px solid #00ff00",
-            borderRadius: 4,
-            background: "#0b0b0b",
-            color: "#cfcfcf",
-          }}
-        >
-          <option value="BUY">🛍️ Buying</option>
-          <option value="SELL">💰 Selling</option>
-          <option value="LOOKING">🔍 Looking for</option>
-        </select>
+        <>
+          <select
+            value={marketplaceListingType}
+            onChange={(e) =>
+              setMarketplaceListingType(
+                e.target.value as MarketplaceListingType,
+              )
+            }
+            style={{
+              width: "100%",
+              marginBottom: 12,
+              padding: "0.5rem",
+              border: "1px solid #00ff00",
+              borderRadius: 4,
+              background: "#0b0b0b",
+              color: "#cfcfcf",
+            }}
+          >
+            <option value="BUY">🛍️ Buying</option>
+            <option value="SELL">💰 Selling</option>
+            <option value="LOOKING">🔍 Looking for</option>
+          </select>
+
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => handleFileChange(e.target.files)}
+            style={{
+              marginBottom: 12,
+              background: "#0b0b0b",
+              color: "#cfcfcf",
+              padding: 12,
+              border: "2px dashed #00ff00",
+              borderRadius: 8,
+            }}
+          />
+
+          {imageFiles.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                marginBottom: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              {imageFiles.map((file, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: "relative",
+                    width: 100,
+                    height: 100,
+                  }}
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`preview-${i}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      border: "1px solid #00ff00",
+                      borderRadius: 4,
+                    }}
+                  />
+                  <button
+                    onClick={() =>
+                      setImageFiles((prev) =>
+                        prev.filter((_, index) => index !== i),
+                      )
+                    }
+                    style={{
+                      position: "absolute",
+                      top: -6,
+                      right: -6,
+                      background: "#ff4d4d",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 20,
+                      height: 20,
+                      color: "#fff",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <input
@@ -163,24 +270,6 @@ export default function CreatePostPage() {
           marginBottom: 12,
         }}
       />
-
-      {postType === "marketplace" && (
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            e.target.files?.[0] && handleFileChange(e.target.files[0])
-          }
-          style={{
-            marginBottom: 12,
-            background: "#0b0b0b",
-            color: "#cfcfcf",
-            padding: 12,
-            border: "2px dashed #00ff00",
-            borderRadius: 8,
-          }}
-        />
-      )}
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button

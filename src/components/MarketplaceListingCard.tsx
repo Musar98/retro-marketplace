@@ -16,7 +16,7 @@ export default function MarketplaceListingCard({
       </Link>
       <p>{marketplaceListing.content}</p>
       {marketplaceListing.images?.map((img, i) => (
-        <Image key={i} src={img} alt="" width={400} height={300} />
+        <Image key={i} src={img} alt="" width={120} height={120} unoptimized />
       ))}
       <p className="text-xs mt-2">Type: {marketplaceListing.type}</p>
     </div>
